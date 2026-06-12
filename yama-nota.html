@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YAMA-Nota · Sesle Nota Yazımı / Notation per Sprache</title>
+<script>function vexReady(){ if(window.__vexcb) window.__vexcb(); }</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vexflow/4.2.2/vexflow-min.js"
+        onload="vexReady()"
+        onerror="(function(){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/vexflow@4.2.2/build/cjs/vexflow.js';s.onload=vexReady;document.head.appendChild(s);})()"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F7F4EC; --card:#FFFEFA; --ink:#211F1C; --muted:#6E675C;
+    --line:#D9D2C3; --accent:#7A1F2B; --accent-soft:#F3E3E1;
+    --ok:#3D6B4F; --gold:#8A6D3B;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:"IBM Plex Sans",sans-serif; background:var(--paper);
+    color:var(--ink); min-height:100vh; padding:20px 16px 60px;
+  }
+  .wrap{max-width:880px; margin:0 auto;}
+  header{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:18px; border-bottom:1px solid var(--line); padding-bottom:14px;}
+  h1{font-family:"Cormorant Garamond",serif; font-weight:600; font-size:30px; letter-spacing:.5px;}
+  h1 .nota{color:var(--accent); font-style:italic;}
+  .head-right{display:flex; align-items:center; gap:12px;}
+  .tag{font-size:12px; color:var(--muted); letter-spacing:.12em; text-transform:uppercase;}
+  .lang-switch{display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .lang-switch button{
+    font-family:inherit; font-size:13px; font-weight:600; padding:7px 14px; border:none;
+    background:var(--card); color:var(--muted); cursor:pointer;
+  }
+  .lang-switch button.on{background:var(--ink); color:var(--card);}
+  .lang-switch button:focus-visible{outline:3px solid var(--gold); outline-offset:-3px;}
+
+  .panel{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:14px;}
+
+  .voice-row{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  #micBtn{
+    width:64px; height:64px; border-radius:50%; border:2px solid var(--accent);
+    background:var(--card); color:var(--accent); font-size:26px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; transition:all .2s; flex-shrink:0;
+  }
+  #micBtn:hover{background:var(--accent-soft);}
+  #micBtn.listening{background:var(--accent); color:#fff; animation:pulse 1.4s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(122,31,43,.35);}70%{box-shadow:0 0 0 16px rgba(122,31,43,0);}100%{box-shadow:0 0 0 0 rgba(122,31,43,0);}}
+  #micBtn:focus-visible{outline:3px solid var(--gold); outline-offset:2px;}
+  .voice-info{flex:1; min-width:220px;}
+  #micStatus{font-weight:600; font-size:15px;}
+  #lastHeard{font-size:13px; color:var(--muted); min-height:18px; font-style:italic;}
+  .voice-unsupported{font-size:13px; color:var(--accent); margin-top:4px;}
+
+  details.help{margin-top:10px; font-size:13px; color:var(--muted);}
+  details.help summary{cursor:pointer; color:var(--ink); font-weight:500;}
+  details.help table{margin-top:8px; border-collapse:collapse; width:100%;}
+  details.help td{padding:3px 8px 3px 0; vertical-align:top;}
+  details.help td:first-child{font-weight:600; color:var(--accent); white-space:nowrap;}
+
+  .grp-label{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:10px 0 6px;}
+  .btnrow{display:flex; flex-wrap:wrap; gap:6px;}
+  button.k{
+    font-family:inherit; font-size:14px; padding:9px 13px; border-radius:7px;
+    border:1px solid var(--line); background:var(--card); cursor:pointer; color:var(--ink);
+    transition:background .15s;
+  }
+  button.k:hover{background:var(--accent-soft);}
+  button.k.active{background:var(--ink); color:var(--card); border-color:var(--ink);}
+  button.k.danger{color:var(--accent); border-color:var(--accent);}
+  button.k:focus-visible{outline:3px solid var(--gold); outline-offset:1px;}
+  .controls-flex{display:flex; gap:24px; flex-wrap:wrap;}
+  .controls-flex > div{min-width:200px;}
+  .chord-row{display:flex; gap:6px; align-items:center; flex-wrap:wrap;}
+  input#chordInput{
+    font-family:inherit; font-size:14px; padding:8px 10px; border:1px solid var(--line);
+    border-radius:7px; width:90px; background:var(--card);
+  }
+
+  .score-panel{padding:22px 14px;}
+  .score-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; padding:0 8px;}
+  .score-head .title{font-family:"Cormorant Garamond",serif; font-size:21px; font-weight:600;}
+  #beatInfo{font-size:12px; color:var(--muted);}
+  #score{width:100%; overflow-x:auto;}
+  #emptyMsg{color:var(--muted); font-size:14px; padding:30px 10px; text-align:center; font-style:italic;}
+
+  @media print{
+    body{background:#fff; padding:0;}
+    .panel:not(.score-panel), header .head-right, #beatInfo{display:none !important;}
+    .panel{border:none;}
+  }
+  @media (prefers-reduced-motion: reduce){ #micBtn.listening{animation:none;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="jsWarn" style="background:#7A1F2B; color:#fff; border-radius:10px; padding:12px 16px; margin-bottom:14px; font-size:14px; line-height:1.5;">
+    ⚠️ <strong>Bu önizlemede uygulama çalışmaz.</strong> Dosyayı indirip <strong>Chrome</strong> ile açın — mikrofon, TR/DE anahtarı ve nota çizimi ancak tarayıcıda etkinleşir.<br>
+    <span style="opacity:.85;">⚠️ <strong>In dieser Vorschau ist die App inaktiv.</strong> Datei herunterladen und mit <strong>Chrome</strong> öffnen.</span>
+  </div>
+  <header>
+    <h1>YAMA·<span class="nota">Nota</span></h1>
+    <div class="head-right">
+      <span class="tag" data-i="tagline">Sesle nota yazımı · prototip</span>
+      <div class="lang-switch" role="group" aria-label="Dil / Sprache">
+        <button id="langTR" class="on">TR</button>
+        <button id="langDE">DE</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- VOICE -->
+  <div class="panel">
+    <div class="voice-row">
+      <button id="micBtn" aria-label="Mikrofon" title="Dinlemeyi başlat/durdur">&#9836;</button>
+      <div class="voice-info">
+        <div id="micStatus">Mikrofon kapalı</div>
+        <div id="lastHeard"></div>
+        <div id="noSpeech" class="voice-unsupported" hidden data-i="noSpeech">Bu tarayıcı sesli tanımayı desteklemiyor (Chrome veya Edge önerilir). Düğmelerle nota girebilirsiniz.</div>
+      </div>
+    </div>
+    <details class="help">
+      <summary data-i="helpTitle">Sesli komutlar</summary>
+      <div id="helpBody"><table>
+        <tr><td>dörtlük la</td><td>süre + nota adı (birlik, ikilik, dörtlük, sekizlik, onaltılık · do re mi fa sol la si)</td></tr>
+        <tr><td>do diyez / si bemol</td><td>arıza işaretleri — nota adından sonra</td></tr>
+        <tr><td>noktalı dörtlük mi</td><td>noktalı süre</td></tr>
+        <tr><td>dörtlük es</td><td>sus (es) ekler</td></tr>
+        <tr><td>ince / kalın</td><td>bir oktav yukarı / aşağı</td></tr>
+        <tr><td>yeni ölçü</td><td>ölçü çizgisi koyar</td></tr>
+        <tr><td>akor la minör</td><td>akor simgesi yazar (Am, G…)</td></tr>
+        <tr><td>geri al</td><td>son notayı siler</td></tr>
+        <tr><td>temizle</td><td>tüm sayfayı siler</td></tr>
+      </table><p style="margin-top:8px;">Süre söylenmezse son seçilen süre kullanılır. Örnek: «sekizlik la do mi la» → dört sekizlik nota.</p></div>
+    </details>
+  </div>
+
+  <!-- MANUAL -->
+  <div class="panel">
+    <div class="controls-flex">
+      <div>
+        <div class="grp-label" data-i="grpDur">Süre</div>
+        <div class="btnrow" id="durRow">
+          <button class="k dur" data-d="w">𝅝 birlik</button>
+          <button class="k dur" data-d="h">𝅗𝅥 ikilik</button>
+          <button class="k dur active" data-d="q">♩ dörtlük</button>
+          <button class="k dur" data-d="8">♪ sekizlik</button>
+          <button class="k dur" data-d="16">𝅘𝅥𝅯 onaltılık</button>
+          <button class="k" id="dotBtn">· noktalı</button>
+        </div>
+        <div class="grp-label" data-i="grpAcc">Arıza · Oktav</div>
+        <div class="btnrow">
+          <button class="k acc" data-a="#">♯ diyez</button>
+          <button class="k acc" data-a="b">♭ bemol</button>
+          <button class="k" id="octDown">Kalın −</button>
+          <span style="align-self:center; font-size:13px; color:var(--muted);" id="octShow">oktav 4</span>
+          <button class="k" id="octUp">İnce +</button>
+        </div>
+      </div>
+      <div>
+        <div class="grp-label" data-i="grpNote">Nota</div>
+        <div class="btnrow" id="noteRow">
+          <button class="k note" data-n="c">Do</button>
+          <button class="k note" data-n="d">Re</button>
+          <button class="k note" data-n="e">Mi</button>
+          <button class="k note" data-n="f">Fa</button>
+          <button class="k note" data-n="g">Sol</button>
+          <button class="k note" data-n="a">La</button>
+          <button class="k note" data-n="b">Si</button>
+          <button class="k" id="restBtn">Es</button>
+        </div>
+        <div class="grp-label" data-i="grpChord">Akor simgesi</div>
+        <div class="chord-row">
+          <input id="chordInput" placeholder="Am, G…" aria-label="Akor / Akkord">
+          <button class="k" id="chordBtn" data-i="btnAdd">Ekle</button>
+        </div>
+      </div>
+    </div>
+    <div class="grp-label" data-i="grpLayout">Düzen</div>
+    <div class="btnrow">
+      <button class="k" id="newMeasure">Yeni ölçü</button>
+      <button class="k" id="undoBtn">Geri al</button>
+      <button class="k danger" id="clearBtn">Temizle</button>
+      <button class="k" id="printBtn">Yazdır / PDF</button>
+    </div>
+  </div>
+
+  <!-- SCORE -->
+  <div class="panel score-panel">
+    <div class="score-head">
+      <span class="title" data-i="scoreTitle">Nota Sayfası</span>
+      <span id="beatInfo"></span>
+    </div>
+    <div id="score"></div>
+    <div id="emptyMsg">Henüz nota yok. Mikrofona konuşun ya da düğmelere dokunun — örn. «dörtlük la».</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var jw = document.getElementById('jsWarn');
+  if(jw) jw.remove();
+  let VF = (window.Vex && window.Vex.Flow) || null;
+  window.__vexcb = function(){
+    VF = window.Vex.Flow;
+    try{ render(); }catch(_){}
+  };
+
+  // ================= I18N =================
+  const I18N = {
+    tr: {
+      tagline:'Sesle nota yazımı · prototip',
+      libFail:'Nota çizim kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edin ve sayfayı tarayıcıda (Chrome önerilir) yeniden açın.',
+      micOff:'Mikrofon kapalı', micOn:'Dinliyorum…', micDenied:'Mikrofon izni verilmedi',
+      micDeniedHint:'Tarayıcı ayarlarından mikrofon iznini açın ya da düğmeleri kullanın.',
+      noSpeech:'Bu tarayıcı sesli tanımayı desteklemiyor (Chrome veya Edge önerilir). Düğmelerle nota girebilirsiniz.',
+      helpTitle:'Sesli komutlar',
+      helpRows:[
+        ['dörtlük la','süre + nota adı (birlik, ikilik, dörtlük, sekizlik, onaltılık · do re mi fa sol la si)'],
+        ['do diyez / si bemol','arıza işaretleri — nota adından sonra'],
+        ['noktalı dörtlük mi','noktalı süre'],
+        ['dörtlük es','sus (es) ekler'],
+        ['ince / kalın','bir oktav yukarı / aşağı'],
+        ['yeni ölçü','ölçü çizgisi koyar'],
+        ['akor la minör','akor simgesi yazar (Am, G…)'],
+        ['geri al','son notayı siler'],
+        ['temizle','tüm sayfayı siler']
+      ],
+      helpNote:'Süre söylenmezse son seçilen süre kullanılır. Örnek: «sekizlik la do mi la» → dört sekizlik nota.',
+      grpDur:'Süre', grpAcc:'Arıza · Oktav', grpNote:'Nota', grpChord:'Akor simgesi', grpLayout:'Düzen',
+      durs:{w:'𝅝 birlik', h:'𝅗𝅥 ikilik', q:'♩ dörtlük', '8':'♪ sekizlik', '16':'𝅘𝅥𝅯 onaltılık'},
+      dot:'· noktalı', sharp:'♯ diyez', flat:'♭ bemol',
+      octDown:'Kalın −', octUp:'İnce +', oct:'oktav',
+      notes:{c:'Do',d:'Re',e:'Mi',f:'Fa',g:'Sol',a:'La',b:'Si'}, rest:'Es',
+      btnAdd:'Ekle', newMeasure:'Yeni ölçü', undo:'Geri al', clear:'Temizle', print:'Yazdır / PDF',
+      confirmClear:'Tüm notalar silinsin mi?',
+      scoreTitle:'Nota Sayfası',
+      empty:'Henüz nota yok. Mikrofona konuşun ya da düğmelere dokunun — örn. «dörtlük la».',
+      beat:(m,b,t)=>`Ölçü ${m} · ${b} / ${t} vuruş`,
+      micTitle:'Dinlemeyi başlat/durdur'
+    },
+    de: {
+      tagline:'Notation per Sprache · Prototyp',
+      libFail:'Die Notensatz-Bibliothek konnte nicht geladen werden. Prüfen Sie die Internetverbindung und öffnen Sie die Seite im Browser (Chrome empfohlen) erneut.',
+      micOff:'Mikrofon aus', micOn:'Ich höre zu…', micDenied:'Mikrofonzugriff verweigert',
+      micDeniedHint:'Erlauben Sie das Mikrofon in den Browsereinstellungen oder nutzen Sie die Tasten.',
+      noSpeech:'Dieser Browser unterstützt keine Spracherkennung (Chrome oder Edge empfohlen). Eingabe per Tasten möglich.',
+      helpTitle:'Sprachbefehle',
+      helpRows:[
+        ['Viertel A','Dauer + Tonname (Ganze, Halbe, Viertel, Achtel, Sechzehntel · C D E F G A H)'],
+        ['Fis / Es / B','deutsche Tonnamen: -is = Kreuz, -es = b · B = B♭, H = B♮'],
+        ['C Kreuz','alternativ: Tonname + „Kreuz“'],
+        ['punktierte Viertel E','punktierte Dauer'],
+        ['Viertel Pause','fügt eine Pause ein'],
+        ['höher / tiefer','eine Oktave hinauf / hinab'],
+        ['neuer Takt','setzt einen Taktstrich'],
+        ['Akkord a-Moll','schreibt ein Akkordsymbol (Am, G…)'],
+        ['rückgängig','löscht die letzte Note'],
+        ['alles löschen','leert die Seite']
+      ],
+      helpNote:'Ohne Dauerangabe gilt die zuletzt gewählte Dauer. Beispiel: «Achtel A C E A» → vier Achtelnoten.',
+      grpDur:'Dauer', grpAcc:'Vorzeichen · Oktave', grpNote:'Ton', grpChord:'Akkordsymbol', grpLayout:'Bearbeiten',
+      durs:{w:'𝅝 Ganze', h:'𝅗𝅥 Halbe', q:'♩ Viertel', '8':'♪ Achtel', '16':'𝅘𝅥𝅯 Sechzehntel'},
+      dot:'· punktiert', sharp:'♯ Kreuz', flat:'♭ b',
+      octDown:'Tiefer −', octUp:'Höher +', oct:'Oktave',
+      notes:{c:'C',d:'D',e:'E',f:'F',g:'G',a:'A',b:'H'}, rest:'Pause',
+      btnAdd:'Hinzufügen', newMeasure:'Neuer Takt', undo:'Rückgängig', clear:'Löschen', print:'Drucken / PDF',
+      confirmClear:'Alle Noten löschen?',
+      scoreTitle:'Notenblatt',
+      empty:'Noch keine Noten. Sprechen Sie ins Mikrofon oder tippen Sie — z. B. «Viertel A».',
+      beat:(m,b,t)=>`Takt ${m} · ${b} / ${t} Schläge`,
+      micTitle:'Zuhören starten/stoppen'
+    }
+  };
+
+  // ================= STATE =================
+  const state = {
+    lang:'tr',
+    measures: [ { notes: [], chord: null } ],
+    curDur: 'q', dotted: false, pendingAcc: null, octave: 4,
+    timeSig: [4,4],
+  };
+  const DUR_BEATS = { w:4, h:2, q:1, '8':0.5, '16':0.25 };
+  function T(){ return I18N[state.lang]; }
+
+  // ================= CORE =================
+  function curMeasure(){ return state.measures[state.measures.length-1]; }
+  function measureBeats(m){ return m.notes.reduce((s,n)=> s + DUR_BEATS[n.dur]*(n.dot?1.5:1), 0); }
+
+  function addNote(letter, acc){
+    const beats = DUR_BEATS[state.curDur]*(state.dotted?1.5:1);
+    if(measureBeats(curMeasure()) + beats > state.timeSig[0] + 0.001)
+      state.measures.push({notes:[], chord:null});
+    curMeasure().notes.push({
+      key: letter, acc: acc !== undefined ? acc : state.pendingAcc, oct: state.octave,
+      dur: state.curDur, dot: state.dotted, rest: false
+    });
+    state.pendingAcc = null; syncAccBtns(); render();
+  }
+  function addRest(){
+    const beats = DUR_BEATS[state.curDur]*(state.dotted?1.5:1);
+    if(measureBeats(curMeasure()) + beats > state.timeSig[0] + 0.001)
+      state.measures.push({notes:[], chord:null});
+    curMeasure().notes.push({ rest:true, dur: state.curDur, dot: state.dotted });
+    render();
+  }
+  function newMeasure(){
+    if(curMeasure().notes.length===0) return;
+    state.measures.push({notes:[], chord:null}); render();
+  }
+  function undo(){
+    const m = curMeasure();
+    if(m.notes.length>0){ m.notes.pop(); }
+    else if(state.measures.length>1){ state.measures.pop(); state.measures[state.measures.length-1].notes.pop(); }
+    render();
+  }
+  function clearAll(){ state.measures=[{notes:[],chord:null}]; render(); }
+  function setChord(sym){ if(sym){ curMeasure().chord = sym; render(); } }
+
+  // ================= RENDER =================
+  const scoreDiv = document.getElementById('score');
+  const emptyMsg = document.getElementById('emptyMsg');
+  const beatInfo = document.getElementById('beatInfo');
+
+  function render(){
+    scoreDiv.innerHTML = '';
+    const hasNotes = state.measures.some(m=>m.notes.length>0);
+    emptyMsg.hidden = hasNotes;
+    beatInfo.textContent = T().beat(
+      state.measures.length,
+      measureBeats(curMeasure()).toLocaleString(state.lang==='tr'?'tr-TR':'de-DE'),
+      state.timeSig[0]);
+    if(!hasNotes) return;
+    if(!VF){
+      VF = (window.Vex && window.Vex.Flow) || null;
+      if(!VF){
+        scoreDiv.innerHTML = '<div style="color:var(--accent); font-size:14px; padding:20px 10px; text-align:center;">' + T().libFail + '</div>';
+        return;
+      }
+    }
+
+    const containerW = Math.max(scoreDiv.clientWidth || 800, 320);
+    const renderer = new VF.Renderer(scoreDiv, VF.Renderer.Backends.SVG);
+    const ctx = renderer.getContext();
+    let x = 10, y = 30;
+    const LINE_H = 110, RIGHT = containerW - 10;
+
+    state.measures.forEach((meas, i)=>{
+      if(meas.notes.length===0 && i===state.measures.length-1 && state.measures.length>1) return;
+      const nNotes = Math.max(meas.notes.length,1);
+      const isLineStart = (x===10);
+      let w = 40 + nNotes*48 + (isLineStart?60:0);
+      if(x + w > RIGHT && !isLineStart){ x = 10; y += LINE_H; w = 40 + nNotes*48 + 60; }
+      const stave = new VF.Stave(x, y, Math.min(w, RIGHT-10));
+      if(x===10){ stave.addClef('treble'); if(i===0) stave.addTimeSignature(state.timeSig.join('/')); }
+      if(i===state.measures.length-1) stave.setEndBarType(VF.Barline.type.END);
+      stave.setContext(ctx).draw();
+
+      if(meas.notes.length>0){
+        const vfNotes = meas.notes.map(n=>{
+          let sn;
+          if(n.rest){ sn = new VF.StaveNote({keys:['b/4'], duration:n.dur+'r'}); }
+          else {
+            sn = new VF.StaveNote({keys:[n.key + (n.acc||'') + '/' + n.oct], duration:n.dur});
+            if(n.acc) sn.addModifier(new VF.Accidental(n.acc));
+          }
+          if(n.dot) VF.Dot.buildAndAttach([sn], {all:true});
+          return sn;
+        });
+        if(meas.chord){
+          const ann = new VF.Annotation(meas.chord)
+            .setFont('IBM Plex Sans', 13, 'bold')
+            .setVerticalJustification(VF.Annotation.VerticalJustify.TOP);
+          vfNotes[0].addModifier(ann);
+        }
+        const voice = new VF.Voice({num_beats:state.timeSig[0], beat_value:state.timeSig[1]});
+        voice.setMode(VF.Voice.Mode.SOFT);
+        voice.addTickables(vfNotes);
+        const beams = VF.Beam.generateBeams(vfNotes);
+        new VF.Formatter().joinVoices([voice]).format([voice], stave.getWidth()-(x===10?90:40));
+        voice.draw(ctx, stave);
+        beams.forEach(b=>b.setContext(ctx).draw());
+      }
+      x += stave.getWidth();
+    });
+    renderer.resize(containerW, y + LINE_H);
+  }
+
+  // ================= PARSERS =================
+  // ---- Turkish ----
+  const TR_NOTES = {'do':'c','dö':'c','to':'c','re':'d','mi':'e','mı':'e','fa':'f','va':'f',
+                    'sol':'g','söl':'g','la':'a','lâ':'a','si':'b','sî':'b','sı':'b'};
+  const TR_DURS  = {'birlik':'w','ikilik':'h','dörtlük':'q','dortluk':'q','sekizlik':'8','onaltılık':'16','onaltilik':'16'};
+  const TR_CHORD_ROOTS = {'do':'C','re':'D','mi':'E','fa':'F','sol':'G','la':'A','si':'B'};
+
+  function parseTR(words){
+    let acted=false;
+    for(let i=0;i<words.length;i++){
+      const w=words[i], two=w+' '+(words[i+1]||'');
+      if(two==='geri al'||w==='gerial'){ undo(); i++; acted=true; continue; }
+      if(two==='yeni ölçü'||w==='ölçü'||w==='olcu'){ newMeasure(); if(two==='yeni ölçü')i++; acted=true; continue; }
+      if(w==='temizle'||two==='hepsini sil'){ clearAll(); acted=true; continue; }
+      if(w==='ince'||w==='tiz'){ octShift(1); acted=true; continue; }
+      if(w==='kalın'||w==='kalin'||w==='pes'){ octShift(-1); acted=true; continue; }
+      if(w==='noktalı'||w==='noktali'){ state.dotted=true; syncDurBtns(); acted=true; continue; }
+      if(w==='düz'||w==='duz'){ state.dotted=false; syncDurBtns(); acted=true; continue; }
+      if(w==='akor'||w==='akort'){
+        const root=TR_CHORD_ROOTS[words[i+1]];
+        if(root){ let sym=root, skip=1; const q=words[i+2]||'';
+          if(q.startsWith('min')){sym+='m';skip=2;} else if(q.startsWith('maj')){skip=2;}
+          else if(q==='diyez'){sym+='#';skip=2;}
+          setChord(sym); i+=skip; acted=true; }
+        continue;
+      }
+      if(TR_DURS[w]){ state.curDur=TR_DURS[w]; syncDurBtns(); acted=true; continue; }
+      if(w==='es'||w==='sus'){ addRest(); afterEntry(); acted=true; continue; }
+      if(w in TR_NOTES){
+        let acc=null; const nxt=words[i+1]||'';
+        if(nxt==='diyez'){acc='#';i++;} else if(nxt==='bemol'){acc='b';i++;}
+        addNote(TR_NOTES[w],acc); afterEntry(); acted=true; continue;
+      }
+    }
+    return acted;
+  }
+
+  // ---- German ----
+  // Letter names: C D E F G A H (=B natural). German B = B flat.
+  // -is = sharp (cis, dis, fis, gis, ais), -es = flat (des, es, ges, as, b)
+  const DE_PLAIN = {'c':'c','ce':'c','zeh':'c','d':'d','de':'d','e':'e','eh':'e',
+                    'f':'f','ef':'f','g':'g','ge':'g','a':'a','ah':'a','h':'b','ha':'b'};
+  const DE_SHARP = {'cis':'c','dis':'d','eis':'e','fis':'f','gis':'g','ais':'a','his':'b'};
+  const DE_FLAT  = {'ces':'c','des':'d','es':'e','fes':'f','ges':'g','as':'a','b':'b','be':'b'};
+  const DE_DURS  = {'ganze':'w','halbe':'h','viertel':'q','viertelnote':'q',
+                    'achtel':'8','achtelnote':'8','sechzehntel':'16','sechzehntelnote':'16'};
+  const DE_CHORD_ROOTS = {'c':'C','d':'D','e':'E','f':'F','g':'G','a':'A','h':'B','b':'Bb',
+                          'cis':'C#','dis':'D#','fis':'F#','gis':'G#','ais':'A#',
+                          'des':'Db','es':'Eb','ges':'Gb','as':'Ab'};
+
+  function parseDE(words){
+    let acted=false;
+    for(let i=0;i<words.length;i++){
+      const w=words[i], two=w+' '+(words[i+1]||'');
+      if(w==='rückgängig'||w==='zurück'||w==='ruckgangig'){ undo(); acted=true; continue; }
+      if(two==='neuer takt'||w==='takt'||w==='taktstrich'){ newMeasure(); if(two==='neuer takt')i++; acted=true; continue; }
+      if(two==='alles löschen'||w==='löschen'||w==='loschen'){ clearAll(); if(two==='alles löschen')i++; acted=true; continue; }
+      if(w==='höher'||w==='hoher'||w==='hoch'){ octShift(1); acted=true; continue; }
+      if(w==='tiefer'||w==='tief'){ octShift(-1); acted=true; continue; }
+      if(w==='punktiert'||w==='punktierte'||w==='punktierter'){ state.dotted=true; syncDurBtns(); acted=true; continue; }
+      if(w==='glatt'||w==='unpunktiert'){ state.dotted=false; syncDurBtns(); acted=true; continue; }
+      if(w==='akkord'||w==='akord'){
+        // handle "a-moll" joined or "a moll" split
+        let tok=(words[i+1]||'').replace('-',' ');
+        let parts=tok.split(' ');
+        let root=DE_CHORD_ROOTS[parts[0]], skip=1, qual=parts[1]||words[i+2]||'';
+        if(root){
+          let sym=root;
+          if(qual.startsWith('moll')){ sym+='m'; skip = parts[1]?1:2; }
+          else if(qual.startsWith('dur')){ skip = parts[1]?1:2; }
+          setChord(sym); i+=skip; acted=true;
+        }
+        continue;
+      }
+      if(DE_DURS[w]){ state.curDur=DE_DURS[w]; syncDurBtns(); acted=true; continue; }
+      if(w==='pause'){ addRest(); afterEntry(); acted=true; continue; }
+      // sharps/flats by suffix first (so "es" is parsed as E flat, "b" as B flat)
+      if(w in DE_SHARP){ addNote(DE_SHARP[w],'#'); afterEntry(); acted=true; continue; }
+      if(w in DE_FLAT){ addNote(DE_FLAT[w],'b'); afterEntry(); acted=true; continue; }
+      if(w in DE_PLAIN){
+        let acc=null; const nxt=words[i+1]||'';
+        if(nxt==='kreuz'){acc='#';i++;}
+        else if(nxt==='b'||nxt==='be'){/* ambiguous, ignore */}
+        addNote(DE_PLAIN[w],acc); afterEntry(); acted=true; continue;
+      }
+    }
+    return acted;
+  }
+
+  function octShift(d){
+    const nv = state.octave + d;
+    if(nv>=2 && nv<=6){ state.octave=nv; syncOct(); }
+  }
+  function afterEntry(){ state.dotted=false; syncDurBtns(); }
+
+  function parseTranscript(raw){
+    const text = raw.toLocaleLowerCase(state.lang==='tr'?'tr-TR':'de-DE')
+      .replace(/[.,!?]/g,' ').replace(/\s+/g,' ').trim();
+    if(!text) return;
+    const words = text.split(' ');
+    return state.lang==='tr' ? parseTR(words) : parseDE(words);
+  }
+
+  // ================= UI SYNC =================
+  function syncDurBtns(){
+    document.querySelectorAll('.dur').forEach(b=>b.classList.toggle('active', b.dataset.d===state.curDur));
+    document.getElementById('dotBtn').classList.toggle('active', state.dotted);
+  }
+  function syncAccBtns(){
+    document.querySelectorAll('.acc').forEach(b=>b.classList.toggle('active', b.dataset.a===state.pendingAcc));
+  }
+  function syncOct(){ document.getElementById('octShow').textContent = T().oct + ' ' + state.octave; }
+
+  function applyLangUI(){
+    const t = T();
+    document.documentElement.lang = state.lang;
+    document.querySelector('[data-i="tagline"]').textContent = t.tagline;
+    document.getElementById('noSpeech').textContent = t.noSpeech;
+    document.querySelector('[data-i="helpTitle"]').textContent = t.helpTitle;
+    document.getElementById('helpBody').innerHTML =
+      '<table>' + t.helpRows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('') +
+      '</table><p style="margin-top:8px;">' + t.helpNote + '</p>';
+    document.querySelector('[data-i="grpDur"]').textContent = t.grpDur;
+    document.querySelector('[data-i="grpAcc"]').textContent = t.grpAcc;
+    document.querySelector('[data-i="grpNote"]').textContent = t.grpNote;
+    document.querySelector('[data-i="grpChord"]').textContent = t.grpChord;
+    document.querySelector('[data-i="grpLayout"]').textContent = t.grpLayout;
+    document.querySelector('[data-i="scoreTitle"]').textContent = t.scoreTitle;
+    document.querySelectorAll('.dur').forEach(b=>b.textContent = t.durs[b.dataset.d]);
+    document.getElementById('dotBtn').textContent = t.dot;
+    document.querySelector('.acc[data-a="#"]').textContent = t.sharp;
+    document.querySelector('.acc[data-a="b"]').textContent = t.flat;
+    document.getElementById('octDown').textContent = t.octDown;
+    document.getElementById('octUp').textContent = t.octUp;
+    document.querySelectorAll('.note').forEach(b=>b.textContent = t.notes[b.dataset.n]);
+    document.getElementById('restBtn').textContent = t.rest;
+    document.getElementById('chordBtn').textContent = t.btnAdd;
+    document.getElementById('newMeasure').textContent = t.newMeasure;
+    document.getElementById('undoBtn').textContent = t.undo;
+    document.getElementById('clearBtn').textContent = t.clear;
+    document.getElementById('printBtn').textContent = t.print;
+    document.getElementById('emptyMsg').textContent = t.empty;
+    document.getElementById('micBtn').title = t.micTitle;
+    micStatus.textContent = listening ? t.micOn : t.micOff;
+    document.getElementById('langTR').classList.toggle('on', state.lang==='tr');
+    document.getElementById('langDE').classList.toggle('on', state.lang==='de');
+    syncOct(); render();
+  }
+
+  // manual events
+  document.querySelectorAll('.dur').forEach(b=>b.onclick=()=>{ state.curDur=b.dataset.d; syncDurBtns(); });
+  document.getElementById('dotBtn').onclick=()=>{ state.dotted=!state.dotted; syncDurBtns(); };
+  document.querySelectorAll('.acc').forEach(b=>b.onclick=()=>{
+    state.pendingAcc = (state.pendingAcc===b.dataset.a) ? null : b.dataset.a; syncAccBtns();
+  });
+  document.querySelectorAll('.note').forEach(b=>b.onclick=()=>addNote(b.dataset.n));
+  document.getElementById('restBtn').onclick=addRest;
+  document.getElementById('octUp').onclick=()=>octShift(1);
+  document.getElementById('octDown').onclick=()=>octShift(-1);
+  document.getElementById('newMeasure').onclick=newMeasure;
+  document.getElementById('undoBtn').onclick=undo;
+  document.getElementById('clearBtn').onclick=()=>{ if(confirm(T().confirmClear)) clearAll(); };
+  document.getElementById('printBtn').onclick=()=>window.print();
+  document.getElementById('chordBtn').onclick=()=>{
+    setChord(document.getElementById('chordInput').value.trim());
+    document.getElementById('chordInput').value='';
+  };
+
+  // ================= SPEECH =================
+  const micBtn = document.getElementById('micBtn');
+  const micStatus = document.getElementById('micStatus');
+  const lastHeard = document.getElementById('lastHeard');
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null, listening = false, wantListening = false;
+
+  function recLang(){ return state.lang==='tr' ? 'tr-TR' : 'de-DE'; }
+
+  if(!SR){
+    document.getElementById('noSpeech').hidden = false;
+    micBtn.disabled = true; micBtn.style.opacity = .4;
+  } else {
+    rec = new SR();
+    rec.lang = recLang(); rec.continuous = true; rec.interimResults = false;
+    rec.onresult = (e)=>{
+      for(let i=e.resultIndex; i<e.results.length; i++){
+        if(e.results[i].isFinal){
+          const t = e.results[i][0].transcript;
+          lastHeard.textContent = '«' + t.trim() + '»';
+          parseTranscript(t);
+        }
+      }
+    };
+    rec.onstart = ()=>{ listening=true; micBtn.classList.add('listening'); micStatus.textContent=T().micOn; };
+    rec.onend = ()=>{
+      listening=false;
+      if(wantListening){ rec.lang = recLang(); try{rec.start();}catch(_){} }
+      else { micBtn.classList.remove('listening'); micStatus.textContent=T().micOff; }
+    };
+    rec.onerror = (e)=>{
+      if(e.error==='not-allowed' || e.error==='service-not-allowed'){
+        wantListening=false; micBtn.classList.remove('listening');
+        micStatus.textContent=T().micDenied;
+        lastHeard.textContent=T().micDeniedHint;
+      }
+    };
+    micBtn.onclick = ()=>{
+      if(wantListening){ wantListening=false; rec.stop(); }
+      else { wantListening=true; rec.lang = recLang(); try{ rec.start(); }catch(_){} }
+    };
+  }
+
+  // language toggle — restarts recognition in the new language if active
+  function setLang(l){
+    if(state.lang===l) return;
+    state.lang = l;
+    if(rec && listening){ rec.stop(); /* onend restarts with new lang because wantListening stays true */ }
+    applyLangUI();
+  }
+  document.getElementById('langTR').onclick = ()=>setLang('tr');
+  document.getElementById('langDE').onclick = ()=>setLang('de');
+
+  window.addEventListener('resize', ()=>render());
+  syncDurBtns(); syncAccBtns(); applyLangUI();
+})();
+</script>
+</body>
+</html>
